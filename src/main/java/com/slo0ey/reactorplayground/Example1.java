@@ -6,34 +6,33 @@ import reactor.util.Logger;
 import reactor.util.Loggers;
 
 import java.time.Duration;
-import java.util.concurrent.CountDownLatch;
 
 public class Example1 {
   private static final Logger LOGGER = Loggers.getLogger(Example1.class);
 
-  public static void run()  {
-    CountDownLatch latch = new CountDownLatch(1);
+  public static Mono<Void> run()  {
+    return Mono.fromRunnable(() -> {
+      LOGGER.info("#########################################################################################");
+      LOGGER.info("###################################### Example1 #########################################");
+      LOGGER.info("#########################################################################################\n");
 
-    Mono.just("Reactor Practice")
-            .doOnSubscribe(sub -> LOGGER.info("Mono.just example"))
-            .subscribe(LOGGER::info);
+      LOGGER.info("### Mono.just 테스트 ###");
+      Mono.just("Reactor Practice")
+              .log()
+              .block();
 
-    Flux.just(1, 2, 3, 4, 5)
-            .doOnSubscribe(sub -> LOGGER.info("Flux.just example"))
-            .map(String::valueOf)
-            .subscribe(LOGGER::info);
+      LOGGER.info("### Flux.just 테스트 ###");
+      Flux.just(1, 2, 3, 4, 5)
+              .log()
+              .map(String::valueOf)
+              .blockLast();
 
-    Flux.interval(Duration.ofSeconds(1))
-            .doOnSubscribe(sub -> LOGGER.info("Flux.interval example"))
-            .take(10)
-            .map(String::valueOf)
-            .doOnComplete(latch::countDown)
-            .subscribe(LOGGER::info);
-
-    try {
-      latch.await();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+      LOGGER.info("### Flux.interval 테스트 ###");
+      Flux.interval(Duration.ofSeconds(1))
+              .log()
+              .take(3) // complete 신호가 아닌 cancel 신호로 종료시킨다.
+              .map(String::valueOf)
+              .blockLast();
+    });
   }
 }

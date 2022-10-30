@@ -8,11 +8,11 @@ public class Main {
   private static final Logger LOGGER = Loggers.getLogger(Main.class);
 
   public static void main(String[] args) {
-    Mono.defer(() -> {
-      LOGGER.info("-------------------------------------- Example1 -----------------------------------------");
-      Example1.run();
+    final Mono<Void> jobs = Mono.when(
+      Example1.run(),
+      Example2.run()
+    );
 
-      return Mono.empty();
-    }).block();
+    jobs.block();
   }
 }
